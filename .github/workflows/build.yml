@@ -40,6 +40,8 @@ jobs:
             os_tag: manylinux_x86_64
           - os: macos-latest
             os_tag: macosx_x86_64
+          - os: ubuntu-latest
+            os_tag: manylinux_aarch64
 
     name: "wheel: ${{ matrix.python_tag }}-${{ matrix.os_tag }}"
     runs-on: ${{ matrix.os }}
@@ -47,6 +49,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
+
+      - name: Set up QEMU
+        if: ${{ matrix.os_tag == 'aarch64' }}
+        uses: docker/setup-qemu-action@v1
 
       - name: Install prerequisites
         run: |
@@ -64,6 +70,7 @@ jobs:
           CIBW_BUILD_VERBOSITY: 3
           CIBW_PROJECT_REQUIRES_PYTHON: ">=3.6"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2010_x86_64
+          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux2014_aarch64
           CIBW_TEST_REQUIRES: pytest
           CIBW_BEFORE_TEST: pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: pytest --pyargs tree
